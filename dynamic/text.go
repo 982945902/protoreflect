@@ -4,6 +4,7 @@ package dynamic
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"math"
@@ -281,7 +282,8 @@ func marshalKnownFieldText(b *indentBuffer, fd *desc.FieldDescriptor, v interfac
 		_, err := b.WriteString(strconv.FormatBool(rv.Bool()))
 		return err
 	case reflect.Slice:
-		return writeString(b, string(rv.Bytes()))
+		return writeHexString(b, string(rv.Bytes()))
+		//return writeString(b, string(rv.Bytes()))
 	case reflect.String:
 		return writeString(b, rv.String())
 	default:
@@ -320,6 +322,15 @@ func marshalKnownFieldText(b *indentBuffer, fd *desc.FieldDescriptor, v interfac
 			return b.WriteByte('>')
 		}
 	}
+}
+
+func writeHexString(b *indentBuffer, s string) error {
+	encoder := hex.NewEncoder(b)
+	if _, err := encoder.Write([]byte(s)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // writeString writes a string in the protocol buffer text format.
